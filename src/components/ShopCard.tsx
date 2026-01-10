@@ -1,5 +1,7 @@
-import { Star, MapPin, Clock } from "lucide-react";
+import { Star, MapPin } from "lucide-react";
 import { Badge } from "./ui/badge";
+
+export type TasteTag = "spicy" | "savory" | "sweet" | "sour";
 
 export interface Shop {
   id: string;
@@ -12,6 +14,7 @@ export interface Shop {
   openNow: boolean;
   priceRange: string;
   speciality: string;
+  tasteTags: TasteTag[];
 }
 
 interface ShopCardProps {
