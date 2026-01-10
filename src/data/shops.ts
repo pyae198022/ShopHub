@@ -5,8 +5,9 @@ import localFood2 from "@/assets/local-food-2.jpg";
 import snacks1 from "@/assets/snacks-1.jpg";
 import snacks2 from "@/assets/snacks-2.jpg";
 
-import { Shop } from "@/components/ShopCard";
+import { Shop, TasteTag } from "@/components/ShopCard";
 import { Category } from "@/components/CategoryFilter";
+import { TastePreference } from "@/components/OnboardingModal";
 
 export const shops: Shop[] = [
   {
@@ -20,6 +21,7 @@ export const shops: Shop[] = [
     openNow: true,
     priceRange: "$",
     speciality: "Famous for hand-pulled noodles & stir-fry",
+    tasteTags: ["savory", "spicy"],
   },
   {
     id: "2",
@@ -32,6 +34,7 @@ export const shops: Shop[] = [
     openNow: true,
     priceRange: "$$",
     speciality: "Artisan croissants & fresh pastries daily",
+    tasteTags: ["sweet"],
   },
   {
     id: "3",
@@ -44,6 +47,7 @@ export const shops: Shop[] = [
     openNow: true,
     priceRange: "$$",
     speciality: "Traditional dumplings & spring rolls",
+    tasteTags: ["savory"],
   },
   {
     id: "4",
@@ -56,6 +60,7 @@ export const shops: Shop[] = [
     openNow: false,
     priceRange: "$",
     speciality: "Grilled skewers with peanut sauce",
+    tasteTags: ["savory", "spicy"],
   },
   {
     id: "5",
@@ -68,6 +73,7 @@ export const shops: Shop[] = [
     openNow: true,
     priceRange: "$$",
     speciality: "Rich tonkotsu broth & soft-boiled eggs",
+    tasteTags: ["savory"],
   },
   {
     id: "6",
@@ -80,12 +86,44 @@ export const shops: Shop[] = [
     openNow: true,
     priceRange: "$",
     speciality: "Handmade mochi ice cream & Japanese sweets",
+    tasteTags: ["sweet"],
+  },
+  {
+    id: "7",
+    name: "Tamarind Kitchen",
+    image: streetFood1,
+    rating: 4.7,
+    reviewCount: 203,
+    distance: "0.9 km",
+    category: "Local Dishes",
+    openNow: true,
+    priceRange: "$$",
+    speciality: "Tangy Thai soups & pad thai",
+    tasteTags: ["sour", "spicy"],
+  },
+  {
+    id: "8",
+    name: "Pickle Paradise",
+    image: snacks2,
+    rating: 4.4,
+    reviewCount: 89,
+    distance: "1.5 km",
+    category: "Snacks",
+    openNow: true,
+    priceRange: "$",
+    speciality: "Fermented vegetables & pickled treats",
+    tasteTags: ["sour", "savory"],
   },
 ];
 
-export const filterShops = (category: Category, searchQuery: string): Shop[] => {
+export const filterShops = (
+  category: Category,
+  searchQuery: string,
+  tastePreferences: TastePreference[] = ["all"]
+): Shop[] => {
   let filtered = shops;
 
+  // Filter by category
   if (category !== "all") {
     const categoryMap: Record<Category, string> = {
       all: "",
@@ -96,6 +134,14 @@ export const filterShops = (category: Category, searchQuery: string): Shop[] => 
     filtered = filtered.filter((shop) => shop.category === categoryMap[category]);
   }
 
+  // Filter by taste preferences
+  if (!tastePreferences.includes("all")) {
+    filtered = filtered.filter((shop) =>
+      shop.tasteTags.some((tag) => tastePreferences.includes(tag as TastePreference))
+    );
+  }
+
+  // Filter by search query
   if (searchQuery.trim()) {
     const query = searchQuery.toLowerCase();
     filtered = filtered.filter(
