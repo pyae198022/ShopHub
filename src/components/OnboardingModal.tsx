@@ -8,7 +8,7 @@ export type TastePreference = "spicy" | "savory" | "sweet" | "sour" | "all";
 
 interface OnboardingModalProps {
   open: boolean;
-  onComplete: (preferences: TastePreference[], address: string | null) => void;
+  onComplete: (preferences: TastePreference[], address: string | null, lat?: number, lng?: number) => void;
   onSkip: () => void;
 }
 
@@ -50,7 +50,7 @@ const OnboardingModal = ({ open, onComplete, onSkip }: OnboardingModalProps) => 
 
   const handleComplete = () => {
     const tastes: TastePreference[] = selectedTastes.length > 0 ? selectedTastes : ["all"];
-    onComplete(tastes, location.address);
+    onComplete(tastes, location.address, location.latitude ?? undefined, location.longitude ?? undefined);
   };
 
   return (
