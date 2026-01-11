@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Star, MapPin } from "lucide-react";
 import { Badge } from "./ui/badge";
 
@@ -23,8 +24,15 @@ interface ShopCardProps {
 }
 
 const ShopCard = ({ shop, index }: ShopCardProps) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/restaurant/${shop.id}`);
+  };
+
   return (
     <article
+      onClick={handleClick}
       className="group bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 cursor-pointer animate-slide-up"
       style={{ animationDelay: `${index * 0.1}s` }}
     >
