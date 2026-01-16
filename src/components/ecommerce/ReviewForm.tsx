@@ -1,10 +1,12 @@
-import { useState } from 'react';
-import { Star } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Star, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useCreateReview } from '@/hooks/useProductReviews';
+import { useAuth } from '@/contexts/AuthContext';
+import { AuthModal } from '@/components/auth/AuthModal';
 
 interface ReviewFormProps {
   productId: string;
@@ -12,14 +14,38 @@ interface ReviewFormProps {
 }
 
 export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
+  const { user } = useAuth();
+  const [authOpen, setAuthOpen] = useState(false);
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [userName, setUserName] = useState('');
-  const [userEmail, setUserEmail] = useState('');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
 
   const { mutate: createReview, isPending } = useCreateReview();
+
+  // Pre-fill user name from profile
+  useEffect(() => {
+    if (user?.user_metadata?.full_name) {
+      setUserName(user.user_metadata.full_name);
+    } else if (user?.email) {
+      setUserName(user.email.split('@')[0]);
+    }
+  }, [user]);
+
+  if (!user) {
+    return (
+      <div className="p-6 bg-card rounded-lg border text-center space-y-4">
+        <h3 className="font-semibold text-lg">Write a Review</h3>
+        <p className="text-muted-foreground">Sign in to share your experience with this product.</p>
+        <Button onClick={() => setAuthOpen(true)} className="gap-2">
+          <LogIn className="h-4 w-4" />
+          Sign In to Review
+        </Button>
+        <AuthModal open={authOpen} onOpenChange={setAuthOpen} />
+      </div>
+    );
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,8 +56,9 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
     createReview(
       {
         product_id: productId,
+        user_id: user.id,
         user_name: userName.trim(),
-        user_email: userEmail.trim() || undefined,
+        user_email: user.email || undefined,
         rating,
         title: title.trim() || undefined,
         content: content.trim(),
@@ -39,8 +66,6 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
       {
         onSuccess: () => {
           setRating(0);
-          setUserName('');
-          setUserEmail('');
           setTitle('');
           setContent('');
           onSuccess?.();
@@ -78,27 +103,15 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="userName">Name *</Label>
-          <Input
-            id="userName"
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)}
-            placeholder="Your name"
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="userEmail">Email (optional)</Label>
-          <Input
-            id="userEmail"
-            type="email"
-            value={userEmail}
-            onChange={(e) => setUserEmail(e.target.value)}
-            placeholder="your@email.com"
-          />
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="userName">Display Name *</Label>
+        <Input
+          id="userName"
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
+          placeholder="Your name"
+          required
+        />
       </div>
 
       <div className="space-y-2">
