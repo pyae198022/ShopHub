@@ -14,7 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      product_reviews: {
+        Row: {
+          content: string
+          created_at: string
+          helpful_count: number | null
+          id: string
+          is_verified_purchase: boolean | null
+          product_id: string
+          rating: number
+          title: string | null
+          user_email: string | null
+          user_name: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          is_verified_purchase?: boolean | null
+          product_id: string
+          rating: number
+          title?: string | null
+          user_email?: string | null
+          user_name: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          is_verified_purchase?: boolean | null
+          product_id?: string
+          rating?: number
+          title?: string | null
+          user_email?: string | null
+          user_name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
