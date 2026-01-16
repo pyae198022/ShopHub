@@ -66,6 +66,41 @@ export function useCreateReview() {
   });
 }
 
+export function useMarkReviewHelpful() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ reviewId, productId }: { reviewId: string; productId: string }) => {
+      // Get current helpful count
+      const { data: review, error: fetchError } = await supabase
+        .from('product_reviews')
+        .select('helpful_count')
+        .eq('id', reviewId)
+        .maybeSingle();
+
+      if (fetchError) throw fetchError;
+      if (!review) throw new Error('Review not found');
+
+      const newCount = (review.helpful_count || 0) + 1;
+
+      const { error: updateError } = await supabase
+        .from('product_reviews')
+        .update({ helpful_count: newCount })
+        .eq('id', reviewId);
+
+      if (updateError) throw updateError;
+      return { reviewId, productId, newCount };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['product-reviews', data.productId] });
+      toast.success('Thanks for your feedback!');
+    },
+    onError: () => {
+      toast.error('Could not mark as helpful. Try again.');
+    },
+  });
+}
+
 export function useReviewStats(productId: string) {
   const { data: reviews } = useProductReviews(productId);
 
