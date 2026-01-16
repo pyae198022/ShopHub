@@ -48,8 +48,6 @@ export function CheckoutForm() {
   const handleConfirmOrder = async () => {
     setIsProcessing(true);
     
-    // Simulate API call to Spring Boot backend
-    // Replace with actual API call: orderApi.create({ cart, shippingAddress, paymentInfo })
     await new Promise((resolve) => setTimeout(resolve, 2000));
     
     toast.success('Order placed successfully!');

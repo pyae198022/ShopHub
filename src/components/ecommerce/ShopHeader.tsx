@@ -34,9 +34,7 @@ export function ShopHeader({ searchQuery, onSearchChange }: ShopHeaderProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="ghost" asChild className="hidden sm:inline-flex">
-              <Link to="/">Back to App</Link>
-            </Button>
+          
             <UserMenu />
             <CartSheet />
           </div>
