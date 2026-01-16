@@ -1,6 +1,8 @@
-import { Star, User, CheckCircle } from 'lucide-react';
+import { useState } from 'react';
+import { Star, User, CheckCircle, ThumbsUp } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ProductReview } from '@/hooks/useProductReviews';
+import { Button } from '@/components/ui/button';
+import { ProductReview, useMarkReviewHelpful } from '@/hooks/useProductReviews';
 import { formatDistanceToNow } from 'date-fns';
 
 interface ReviewListProps {
@@ -47,6 +49,20 @@ export function ReviewList({ reviews, isLoading }: ReviewListProps) {
 }
 
 function ReviewCard({ review }: { review: ProductReview }) {
+  const [hasVoted, setHasVoted] = useState(false);
+  const { mutate: markHelpful, isPending } = useMarkReviewHelpful();
+
+  const handleHelpfulClick = () => {
+    if (hasVoted) return;
+    
+    markHelpful(
+      { reviewId: review.id, productId: review.product_id },
+      {
+        onSuccess: () => setHasVoted(true),
+      }
+    );
+  };
+
   return (
     <div className="p-4 border rounded-lg space-y-3 bg-card">
       <div className="flex items-start justify-between gap-4">
@@ -91,6 +107,23 @@ function ReviewCard({ review }: { review: ProductReview }) {
       )}
 
       <p className="text-muted-foreground leading-relaxed">{review.content}</p>
+
+      {/* Helpful Button */}
+      <div className="flex items-center gap-2 pt-2">
+        <Button
+          variant={hasVoted ? "secondary" : "outline"}
+          size="sm"
+          onClick={handleHelpfulClick}
+          disabled={isPending || hasVoted}
+          className="gap-2"
+        >
+          <ThumbsUp className={`h-4 w-4 ${hasVoted ? 'fill-current' : ''}`} />
+          Helpful {review.helpful_count > 0 && `(${review.helpful_count})`}
+        </Button>
+        {hasVoted && (
+          <span className="text-xs text-muted-foreground">Thank you for your feedback!</span>
+        )}
+      </div>
     </div>
   );
 }
