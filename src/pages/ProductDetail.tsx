@@ -7,6 +7,7 @@ import { sampleProducts } from '@/data/sampleProducts';
 import { useCart } from '@/contexts/CartContext';
 import { useState } from 'react';
 import { CartSheet } from '@/components/ecommerce/CartSheet';
+import { ProductReviews } from '@/components/ecommerce/ProductReviews';
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
@@ -186,6 +187,12 @@ export default function ProductDetail() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="mt-12">
+          <Separator className="mb-8" />
+          <ProductReviews productId={product.id} />
         </div>
       </main>
     </div>
