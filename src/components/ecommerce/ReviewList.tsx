@@ -1,16 +1,23 @@
 import { useState } from 'react';
-import { Star, User, CheckCircle, ThumbsUp } from 'lucide-react';
+import { Star, User, CheckCircle, ThumbsUp, LogIn } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { ProductReview, useMarkReviewHelpful } from '@/hooks/useProductReviews';
+import { useUserVotes } from '@/hooks/useUserVotes';
+import { useAuth } from '@/contexts/AuthContext';
+import { AuthModal } from '@/components/auth/AuthModal';
 import { formatDistanceToNow } from 'date-fns';
 
 interface ReviewListProps {
   reviews: ProductReview[] | undefined;
   isLoading: boolean;
+  productId: string;
 }
 
-export function ReviewList({ reviews, isLoading }: ReviewListProps) {
+export function ReviewList({ reviews, isLoading, productId }: ReviewListProps) {
+  const { user } = useAuth();
+  const { data: userVotes = [] } = useUserVotes(productId);
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -42,21 +49,38 @@ export function ReviewList({ reviews, isLoading }: ReviewListProps) {
   return (
     <div className="space-y-4">
       {reviews.map((review) => (
-        <ReviewCard key={review.id} review={review} />
+        <ReviewCard 
+          key={review.id} 
+          review={review} 
+          user={user}
+          hasVoted={userVotes.includes(review.id)}
+        />
       ))}
     </div>
   );
 }
 
-function ReviewCard({ review }: { review: ProductReview }) {
-  const [hasVoted, setHasVoted] = useState(false);
+interface ReviewCardProps {
+  review: ProductReview;
+  user: ReturnType<typeof useAuth>['user'];
+  hasVoted: boolean;
+}
+
+function ReviewCard({ review, user, hasVoted: initialHasVoted }: ReviewCardProps) {
+  const [hasVoted, setHasVoted] = useState(initialHasVoted);
+  const [authOpen, setAuthOpen] = useState(false);
   const { mutate: markHelpful, isPending } = useMarkReviewHelpful();
 
   const handleHelpfulClick = () => {
+    if (!user) {
+      setAuthOpen(true);
+      return;
+    }
+    
     if (hasVoted) return;
     
     markHelpful(
-      { reviewId: review.id, productId: review.product_id },
+      { reviewId: review.id, productId: review.product_id, userId: user.id },
       {
         onSuccess: () => setHasVoted(true),
       }
@@ -117,13 +141,24 @@ function ReviewCard({ review }: { review: ProductReview }) {
           disabled={isPending || hasVoted}
           className="gap-2"
         >
-          <ThumbsUp className={`h-4 w-4 ${hasVoted ? 'fill-current' : ''}`} />
-          Helpful {review.helpful_count > 0 && `(${review.helpful_count})`}
+          {!user ? (
+            <>
+              <LogIn className="h-4 w-4" />
+              Sign in to vote
+            </>
+          ) : (
+            <>
+              <ThumbsUp className={`h-4 w-4 ${hasVoted ? 'fill-current' : ''}`} />
+              Helpful {review.helpful_count > 0 && `(${review.helpful_count})`}
+            </>
+          )}
         </Button>
         {hasVoted && (
           <span className="text-xs text-muted-foreground">Thank you for your feedback!</span>
         )}
       </div>
+
+      <AuthModal open={authOpen} onOpenChange={setAuthOpen} />
     </div>
   );
 }

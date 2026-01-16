@@ -25,6 +25,7 @@ export type Database = {
           rating: number
           title: string | null
           user_email: string | null
+          user_id: string | null
           user_name: string
         }
         Insert: {
@@ -37,6 +38,7 @@ export type Database = {
           rating: number
           title?: string | null
           user_email?: string | null
+          user_id?: string | null
           user_name: string
         }
         Update: {
@@ -49,9 +51,66 @@ export type Database = {
           rating?: number
           title?: string | null
           user_email?: string | null
+          user_id?: string | null
           user_name?: string
         }
         Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      review_votes: {
+        Row: {
+          created_at: string
+          id: string
+          review_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          review_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          review_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_votes_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "product_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

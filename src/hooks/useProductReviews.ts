@@ -17,6 +17,7 @@ export interface ProductReview {
 
 export interface CreateReviewInput {
   product_id: string;
+  user_id: string;
   user_name: string;
   user_email?: string;
   rating: number;
@@ -70,7 +71,19 @@ export function useMarkReviewHelpful() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ reviewId, productId }: { reviewId: string; productId: string }) => {
+    mutationFn: async ({ reviewId, productId, userId }: { reviewId: string; productId: string; userId: string }) => {
+      // First record the vote
+      const { error: voteError } = await supabase
+        .from('review_votes')
+        .insert([{ user_id: userId, review_id: reviewId }]);
+
+      if (voteError) {
+        if (voteError.code === '23505') {
+          throw new Error('You have already voted on this review');
+        }
+        throw voteError;
+      }
+
       // Get current helpful count
       const { data: review, error: fetchError } = await supabase
         .from('product_reviews')
@@ -93,10 +106,11 @@ export function useMarkReviewHelpful() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['product-reviews', data.productId] });
+      queryClient.invalidateQueries({ queryKey: ['user-votes'] });
       toast.success('Thanks for your feedback!');
     },
-    onError: () => {
-      toast.error('Could not mark as helpful. Try again.');
+    onError: (error) => {
+      toast.error(error.message || 'Could not mark as helpful. Try again.');
     },
   });
 }
