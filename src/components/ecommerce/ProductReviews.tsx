@@ -57,7 +57,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
 
       <Separator />
 
-      <ReviewList reviews={reviews} isLoading={isLoading} />
+      <ReviewList reviews={reviews} isLoading={isLoading} productId={productId} />
     </section>
   );
 }

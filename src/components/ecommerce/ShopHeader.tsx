@@ -3,6 +3,7 @@ import { Store, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CartSheet } from './CartSheet';
+import { UserMenu } from '@/components/auth/UserMenu';
 
 interface ShopHeaderProps {
   searchQuery: string;
@@ -36,6 +37,7 @@ export function ShopHeader({ searchQuery, onSearchChange }: ShopHeaderProps) {
             <Button variant="ghost" asChild className="hidden sm:inline-flex">
               <Link to="/">Back to App</Link>
             </Button>
+            <UserMenu />
             <CartSheet />
           </div>
         </div>
