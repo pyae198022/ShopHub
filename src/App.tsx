@@ -10,6 +10,7 @@ import ProductDetail from "./pages/ProductDetail";
 import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 import Profile from "./pages/Profile";
+import Wishlist from "./pages/Wishlist";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
               <Route path="/shop/checkout" element={<Checkout />} />
               <Route path="/shop/order-success" element={<OrderSuccess />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/wishlist" element={<Wishlist />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
