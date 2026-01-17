@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { User, LogOut } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -50,6 +51,13 @@ export function UserMenu() {
           <p className="text-sm font-medium">{user.user_metadata?.full_name || 'User'}</p>
           <p className="text-xs text-muted-foreground">{user.email}</p>
         </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link to="/profile">
+            <User className="mr-2 h-4 w-4" />
+            My Profile
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut()}>
           <LogOut className="mr-2 h-4 w-4" />
