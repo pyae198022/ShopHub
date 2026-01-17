@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import type { Product } from '@/types/ecommerce';
 import { useCart } from '@/contexts/CartContext';
 import { Link } from 'react-router-dom';
+import { WishlistButton } from './WishlistButton';
 
 interface ProductCardProps {
   product: Product;
@@ -30,8 +31,11 @@ export function ProductCard({ product }: ProductCardProps) {
               -{discount}%
             </Badge>
           )}
+          <div className="absolute top-3 right-3">
+            <WishlistButton productId={product.id} className="bg-background/80 hover:bg-background" />
+          </div>
           {product.stock < 10 && product.stock > 0 && (
-            <Badge variant="secondary" className="absolute top-3 right-3">
+            <Badge variant="secondary" className="absolute bottom-3 right-3">
               Only {product.stock} left
             </Badge>
           )}
