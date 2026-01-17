@@ -8,6 +8,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useState } from 'react';
 import { CartSheet } from '@/components/ecommerce/CartSheet';
 import { ProductReviews } from '@/components/ecommerce/ProductReviews';
+import { WishlistButton } from '@/components/ecommerce/WishlistButton';
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
@@ -155,15 +156,18 @@ export default function ProductDetail() {
                 </span>
               </div>
 
-              <Button
-                size="lg"
-                className="w-full"
-                onClick={() => addToCart(product, quantity)}
-                disabled={product.stock === 0}
-              >
-                <ShoppingCart className="h-5 w-5 mr-2" />
-                Add to Cart - ${(product.price * quantity).toFixed(2)}
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  size="lg"
+                  className="flex-1"
+                  onClick={() => addToCart(product, quantity)}
+                  disabled={product.stock === 0}
+                >
+                  <ShoppingCart className="h-5 w-5 mr-2" />
+                  Add to Cart - ${(product.price * quantity).toFixed(2)}
+                </Button>
+                <WishlistButton productId={product.id} variant="default" />
+              </div>
             </div>
 
             <Separator />
