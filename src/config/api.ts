@@ -1,7 +1,7 @@
 // Configure your Spring Boot backend URL here
 export const API_CONFIG = {
   // Change this to your Spring Boot backend URL
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
+  BASE_URL: (import.meta as unknown as { env: Record<string, string> }).env.VITE_API_BASE_URL || 'http://localhost:8080/api',
   
   // API Endpoints - adjust these to match your Spring Boot controller mappings
   ENDPOINTS: {
