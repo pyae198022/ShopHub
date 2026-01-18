@@ -5,17 +5,26 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { sampleProducts } from '@/data/sampleProducts';
 import { useCart } from '@/contexts/CartContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CartSheet } from '@/components/ecommerce/CartSheet';
 import { ProductReviews } from '@/components/ecommerce/ProductReviews';
 import { WishlistButton } from '@/components/ecommerce/WishlistButton';
+import { useBrowsingHistory } from '@/hooks/useBrowsingHistory';
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
+  const { trackProductView } = useBrowsingHistory();
 
   const product = sampleProducts.find((p) => p.id === id);
+  
+  // Track product view when the page loads
+  useEffect(() => {
+    if (id) {
+      trackProductView(id);
+    }
+  }, [id, trackProductView]);
 
   if (!product) {
     return (
