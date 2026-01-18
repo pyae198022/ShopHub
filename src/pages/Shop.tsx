@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { ShopHeader } from '@/components/ecommerce/ShopHeader';
 import { CategoryFilter } from '@/components/ecommerce/CategoryFilter';
 import { ProductCard } from '@/components/ecommerce/ProductCard';
+import { AIRecommendations } from '@/components/ecommerce/AIRecommendations';
 import { sampleProducts, categories } from '@/data/sampleProducts';
 
 export default function Shop() {
@@ -31,6 +32,8 @@ export default function Shop() {
             Discover our curated collection of premium products
           </p>
         </div>
+
+        <AIRecommendations />
 
         <CategoryFilter
           categories={categories}
