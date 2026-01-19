@@ -1,5 +1,5 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Star, ThumbsUp, MessageSquare, Clock } from 'lucide-react';
+import { ArrowLeft, Star, ThumbsUp, MessageSquare, Clock, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserReviews, useUserVotesWithDetails } from '@/hooks/useUserProfile';
+import { useProfileData } from '@/hooks/useProfileData';
+import { ProfileEditForm } from '@/components/profile/ProfileEditForm';
 import { sampleProducts } from '@/data/sampleProducts';
 import { useEffect } from 'react';
 
@@ -43,6 +45,7 @@ export default function Profile() {
   const { user, isLoading: authLoading } = useAuth();
   const { data: reviews, isLoading: reviewsLoading } = useUserReviews();
   const { data: votes, isLoading: votesLoading } = useUserVotesWithDetails();
+  const { data: profile, isLoading: profileLoading } = useProfileData();
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -50,7 +53,7 @@ export default function Profile() {
     }
   }, [user, authLoading, navigate]);
 
-  if (authLoading) {
+  if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -111,11 +114,31 @@ export default function Profile() {
           </Card>
         </div>
 
-        <Tabs defaultValue="reviews" className="space-y-4">
+        <Tabs defaultValue="settings" className="space-y-4">
           <TabsList>
+            <TabsTrigger value="settings">
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </TabsTrigger>
             <TabsTrigger value="reviews">My Reviews</TabsTrigger>
             <TabsTrigger value="votes">Voting History</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="settings" className="space-y-4">
+            {profile ? (
+              <ProfileEditForm profile={profile} />
+            ) : (
+              <div className="space-y-4">
+                <Card>
+                  <CardContent className="p-6">
+                    <Skeleton className="h-24 w-24 rounded-full mb-4" />
+                    <Skeleton className="h-4 w-1/3 mb-2" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </TabsContent>
 
           <TabsContent value="reviews" className="space-y-4">
             {reviewsLoading ? (
