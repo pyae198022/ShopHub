@@ -1,9 +1,12 @@
 import { useState, useMemo } from 'react';
+import { LayoutGrid, List } from 'lucide-react';
 import { ShopHeader } from '@/components/ecommerce/ShopHeader';
 import { CategoryFilter } from '@/components/ecommerce/CategoryFilter';
 import { ProductCard } from '@/components/ecommerce/ProductCard';
+import { ProductListItem } from '@/components/ecommerce/ProductListItem';
 import { AIRecommendations } from '@/components/ecommerce/AIRecommendations';
 import { sampleProducts, categories } from '@/data/sampleProducts';
+import { Button } from '@/components/ui/button';
 import {
   Pagination,
   PaginationContent,
@@ -22,11 +25,14 @@ import {
 
 const PRODUCTS_PER_PAGE_OPTIONS = [8, 16, 24, 48];
 
+type ViewMode = 'grid' | 'list';
+
 export default function Shop() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage, setProductsPerPage] = useState(8);
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
   const filteredProducts = useMemo(() => {
     return sampleProducts.filter((product) => {
@@ -113,28 +119,58 @@ export default function Shop() {
                 {Math.min(currentPage * productsPerPage, filteredProducts.length)} of{' '}
                 {filteredProducts.length} products
               </p>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Show:</span>
-                <Select value={productsPerPage.toString()} onValueChange={handleProductsPerPageChange}>
-                  <SelectTrigger className="w-20">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PRODUCTS_PER_PAGE_OPTIONS.map((option) => (
-                      <SelectItem key={option} value={option.toString()}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1 border rounded-md p-1">
+                  <Button
+                    variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setViewMode('grid')}
+                    aria-label="Grid view"
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setViewMode('list')}
+                    aria-label="List view"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Show:</span>
+                  <Select value={productsPerPage.toString()} onValueChange={handleProductsPerPageChange}>
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PRODUCTS_PER_PAGE_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option.toString()}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {paginatedProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            {viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {paginatedProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {paginatedProducts.map((product) => (
+                  <ProductListItem key={product.id} product={product} />
+                ))}
+              </div>
+            )}
 
             {totalPages > 1 && (
               <Pagination className="mt-8">
