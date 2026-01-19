@@ -12,13 +12,21 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
-const PRODUCTS_PER_PAGE = 8;
+const PRODUCTS_PER_PAGE_OPTIONS = [8, 16, 24, 48];
 
 export default function Shop() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
+  const [productsPerPage, setProductsPerPage] = useState(8);
 
   const filteredProducts = useMemo(() => {
     return sampleProducts.filter((product) => {
@@ -35,14 +43,19 @@ export default function Shop() {
   // Reset to page 1 when filters change
   useMemo(() => {
     setCurrentPage(1);
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery, productsPerPage]);
 
-  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   
   const paginatedProducts = useMemo(() => {
-    const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
-    return filteredProducts.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
-  }, [filteredProducts, currentPage]);
+    const startIndex = (currentPage - 1) * productsPerPage;
+    return filteredProducts.slice(startIndex, startIndex + productsPerPage);
+  }, [filteredProducts, currentPage, productsPerPage]);
+
+  const handleProductsPerPageChange = (value: string) => {
+    setProductsPerPage(Number(value));
+    setCurrentPage(1);
+  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -96,10 +109,25 @@ export default function Shop() {
           <>
             <div className="flex justify-between items-center mb-4">
               <p className="text-sm text-muted-foreground">
-                Showing {(currentPage - 1) * PRODUCTS_PER_PAGE + 1}-
-                {Math.min(currentPage * PRODUCTS_PER_PAGE, filteredProducts.length)} of{' '}
+                Showing {(currentPage - 1) * productsPerPage + 1}-
+                {Math.min(currentPage * productsPerPage, filteredProducts.length)} of{' '}
                 {filteredProducts.length} products
               </p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Show:</span>
+                <Select value={productsPerPage.toString()} onValueChange={handleProductsPerPageChange}>
+                  <SelectTrigger className="w-20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRODUCTS_PER_PAGE_OPTIONS.map((option) => (
+                      <SelectItem key={option} value={option.toString()}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
