@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { LayoutGrid, List } from 'lucide-react';
 import { ShopHeader } from '@/components/ecommerce/ShopHeader';
 import { CategoryFilter } from '@/components/ecommerce/CategoryFilter';
@@ -24,15 +24,25 @@ import {
 } from '@/components/ui/select';
 
 const PRODUCTS_PER_PAGE_OPTIONS = [8, 16, 24, 48];
+const VIEW_MODE_KEY = 'shop-view-mode';
 
 type ViewMode = 'grid' | 'list';
+
+const getStoredViewMode = (): ViewMode => {
+  const stored = localStorage.getItem(VIEW_MODE_KEY);
+  return stored === 'list' ? 'list' : 'grid';
+};
 
 export default function Shop() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage, setProductsPerPage] = useState(8);
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [viewMode, setViewMode] = useState<ViewMode>(getStoredViewMode);
+
+  useEffect(() => {
+    localStorage.setItem(VIEW_MODE_KEY, viewMode);
+  }, [viewMode]);
 
   const filteredProducts = useMemo(() => {
     return sampleProducts.filter((product) => {
