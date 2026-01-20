@@ -14,6 +14,18 @@ export interface OrderItem {
   created_at: string;
 }
 
+export interface ShippingAddress {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+}
+
 export interface Order {
   id: string;
   user_id: string;
@@ -21,19 +33,14 @@ export interface Order {
   total: number;
   subtotal: number;
   tax: number;
-  shipping_address: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    address: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
-  } | null;
+  shipping_address: ShippingAddress | null;
   billing_address: Record<string, unknown> | null;
   payment_method: string | null;
+  tracking_number: string | null;
+  carrier: string | null;
+  estimated_delivery: string | null;
+  shipped_at: string | null;
+  delivered_at: string | null;
   created_at: string;
   updated_at: string;
   order_items?: OrderItem[];
@@ -65,6 +72,7 @@ export function useOrderHistory() {
 
           return {
             ...order,
+            shipping_address: order.shipping_address as unknown as ShippingAddress | null,
             order_items: items || [],
           } as Order;
         })

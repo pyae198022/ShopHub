@@ -1,14 +1,16 @@
 import { Link } from 'react-router-dom';
-import { Package, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { Package, Clock, ChevronDown, ChevronUp, Truck, MapPin, CheckCircle2, Circle } from 'lucide-react';
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Progress } from '@/components/ui/progress';
 import { useOrderHistory, Order } from '@/hooks/useOrderHistory';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
-function formatDate(dateString: string): string {
+function formatDate(dateString: string | null): string {
+  if (!dateString) return '';
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -33,6 +35,93 @@ function getStatusBadgeVariant(status: string): 'default' | 'secondary' | 'destr
 
 function getStatusLabel(status: string): string {
   return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function getTrackingProgress(status: string): number {
+  switch (status) {
+    case 'pending':
+      return 10;
+    case 'confirmed':
+      return 25;
+    case 'processing':
+      return 40;
+    case 'shipped':
+      return 70;
+    case 'delivered':
+      return 100;
+    default:
+      return 0;
+  }
+}
+
+function TrackingTimeline({ order }: { order: Order }) {
+  const steps = [
+    { key: 'confirmed', label: 'Order Confirmed', date: order.created_at, completed: true },
+    { key: 'processing', label: 'Processing', date: null, completed: ['processing', 'shipped', 'delivered'].includes(order.status) },
+    { key: 'shipped', label: 'Shipped', date: order.shipped_at, completed: ['shipped', 'delivered'].includes(order.status) },
+    { key: 'delivered', label: 'Delivered', date: order.delivered_at, completed: order.status === 'delivered' },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between mb-2">
+        <h4 className="font-medium">Shipment Tracking</h4>
+        {order.tracking_number && (
+          <div className="text-sm">
+            <span className="text-muted-foreground">Tracking: </span>
+            <span className="font-mono">{order.tracking_number}</span>
+            {order.carrier && (
+              <span className="text-muted-foreground ml-2">({order.carrier})</span>
+            )}
+          </div>
+        )}
+      </div>
+      
+      <Progress value={getTrackingProgress(order.status)} className="h-2" />
+      
+      <div className="grid grid-cols-4 gap-2">
+        {steps.map((step, index) => (
+          <div key={step.key} className="text-center">
+            <div className="flex justify-center mb-2">
+              {step.completed ? (
+                <CheckCircle2 className="h-6 w-6 text-primary" />
+              ) : (
+                <Circle className="h-6 w-6 text-muted-foreground" />
+              )}
+            </div>
+            <p className={`text-xs font-medium ${step.completed ? 'text-foreground' : 'text-muted-foreground'}`}>
+              {step.label}
+            </p>
+            {step.date && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {formatDate(step.date)}
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {order.estimated_delivery && order.status !== 'delivered' && (
+        <div className="flex items-center gap-2 p-3 bg-muted rounded-lg mt-4">
+          <Truck className="h-5 w-5 text-primary" />
+          <div>
+            <p className="text-sm font-medium">Estimated Delivery</p>
+            <p className="text-sm text-muted-foreground">{formatDate(order.estimated_delivery)}</p>
+          </div>
+        </div>
+      )}
+
+      {order.status === 'delivered' && order.delivered_at && (
+        <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg mt-4">
+          <CheckCircle2 className="h-5 w-5 text-primary" />
+          <div>
+            <p className="text-sm font-medium">Delivered</p>
+            <p className="text-sm text-muted-foreground">{formatDate(order.delivered_at)}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function OrderCard({ order }: { order: Order }) {
@@ -80,6 +169,11 @@ function OrderCard({ order }: { order: Order }) {
           </CollapsibleTrigger>
 
           <CollapsibleContent className="mt-4 space-y-4">
+            {/* Tracking Timeline */}
+            <div className="border-t pt-4">
+              <TrackingTimeline order={order} />
+            </div>
+
             <div className="border-t pt-4">
               <h4 className="font-medium mb-3">Items</h4>
               <div className="space-y-3">
