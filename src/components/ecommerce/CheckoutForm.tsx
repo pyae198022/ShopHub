@@ -7,12 +7,15 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { createOrder } from '@/hooks/useOrderHistory';
 import { toast } from 'sonner';
 import type { ShippingAddress, PaymentInfo } from '@/types/ecommerce';
 
 export function CheckoutForm() {
   const navigate = useNavigate();
   const { cart, clearCart } = useCart();
+  const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<'shipping' | 'payment' | 'confirm'>('shipping');
 
@@ -48,12 +51,26 @@ export function CheckoutForm() {
   const handleConfirmOrder = async () => {
     setIsProcessing(true);
     
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    
-    toast.success('Order placed successfully!');
-    clearCart();
-    navigate('/shop/order-success');
-    setIsProcessing(false);
+    try {
+      if (user) {
+        // Save order to database for logged-in users
+        await createOrder(
+          user.id,
+          cart,
+          shippingAddress,
+          `Card ending in ${paymentInfo.cardNumber.slice(-4)}`
+        );
+      }
+      
+      toast.success('Order placed successfully!');
+      clearCart();
+      navigate('/shop/order-success');
+    } catch (error) {
+      console.error('Error creating order:', error);
+      toast.error('Failed to place order. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const updateShipping = (field: keyof ShippingAddress, value: string) => {

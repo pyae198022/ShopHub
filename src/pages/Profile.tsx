@@ -1,5 +1,5 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Star, ThumbsUp, MessageSquare, Clock, Settings } from 'lucide-react';
+import { ArrowLeft, Star, ThumbsUp, MessageSquare, Clock, Settings, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,7 +8,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserReviews, useUserVotesWithDetails } from '@/hooks/useUserProfile';
 import { useProfileData } from '@/hooks/useProfileData';
+import { useOrderHistory } from '@/hooks/useOrderHistory';
 import { ProfileEditForm } from '@/components/profile/ProfileEditForm';
+import { OrderHistory } from '@/components/profile/OrderHistory';
 import { sampleProducts } from '@/data/sampleProducts';
 import { useEffect } from 'react';
 
@@ -46,6 +48,7 @@ export default function Profile() {
   const { data: reviews, isLoading: reviewsLoading } = useUserReviews();
   const { data: votes, isLoading: votesLoading } = useUserVotesWithDetails();
   const { data: profile, isLoading: profileLoading } = useProfileData();
+  const { data: orders } = useOrderHistory();
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -82,7 +85,16 @@ export default function Profile() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="grid gap-6 md:grid-cols-3 mb-8">
+        <div className="grid gap-6 md:grid-cols-4 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{orders?.length || 0}</div>
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Reviews</CardTitle>
@@ -114,8 +126,12 @@ export default function Profile() {
           </Card>
         </div>
 
-        <Tabs defaultValue="settings" className="space-y-4">
+        <Tabs defaultValue="orders" className="space-y-4">
           <TabsList>
+            <TabsTrigger value="orders">
+              <Package className="h-4 w-4 mr-2" />
+              Orders
+            </TabsTrigger>
             <TabsTrigger value="settings">
               <Settings className="h-4 w-4 mr-2" />
               Settings
@@ -123,6 +139,10 @@ export default function Profile() {
             <TabsTrigger value="reviews">My Reviews</TabsTrigger>
             <TabsTrigger value="votes">Voting History</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="orders" className="space-y-4">
+            <OrderHistory />
+          </TabsContent>
 
           <TabsContent value="settings" className="space-y-4">
             {profile ? (
