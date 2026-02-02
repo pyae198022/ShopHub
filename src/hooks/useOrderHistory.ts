@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
 import type { Json } from '@/integrations/supabase/types';
 
 export interface OrderItem {
@@ -67,6 +68,32 @@ export function useOrderHistory() {
         },
         (payload) => {
           console.log('Order update received:', payload);
+          
+          // Show toast notification for status updates
+          if (payload.eventType === 'UPDATE' && payload.new) {
+            const newOrder = payload.new as { status?: string; id?: string };
+            const oldOrder = payload.old as { status?: string } | null;
+            
+            if (newOrder.status && newOrder.status !== oldOrder?.status) {
+              const statusMessages: Record<string, { title: string; description: string }> = {
+                confirmed: { title: 'Order Confirmed! ✓', description: 'Your order has been confirmed and is being prepared.' },
+                processing: { title: 'Order Processing 📦', description: 'Your order is being processed and will ship soon.' },
+                shipped: { title: 'Order Shipped! 🚚', description: 'Your order is on its way!' },
+                delivered: { title: 'Order Delivered! 🎉', description: 'Your order has been delivered. Enjoy!' },
+              };
+              
+              const message = statusMessages[newOrder.status] || {
+                title: 'Order Updated',
+                description: `Your order status changed to: ${newOrder.status}`,
+              };
+              
+              toast({
+                title: message.title,
+                description: message.description,
+              });
+            }
+          }
+          
           // Invalidate and refetch orders when changes occur
           queryClient.invalidateQueries({ queryKey: ['orders', user.id] });
         }
