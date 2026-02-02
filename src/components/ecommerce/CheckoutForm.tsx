@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { createOrder } from '@/hooks/useOrderHistory';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { ShippingAddress, PaymentInfo } from '@/types/ecommerce';
 
@@ -52,14 +53,32 @@ export function CheckoutForm() {
     setIsProcessing(true);
     
     try {
+      let orderId: string | null = null;
+      
       if (user) {
         // Save order to database for logged-in users
-        await createOrder(
+        orderId = await createOrder(
           user.id,
           cart,
           shippingAddress,
           `Card ending in ${paymentInfo.cardNumber.slice(-4)}`
         );
+        
+        // Send order confirmation email
+        if (orderId) {
+          try {
+            await supabase.functions.invoke('send-order-notification', {
+              body: {
+                orderId,
+                status: 'confirmed',
+              },
+            });
+            console.log('Order confirmation email sent');
+          } catch (emailError) {
+            console.error('Failed to send confirmation email:', emailError);
+            // Don't fail the order if email fails
+          }
+        }
       }
       
       toast.success('Order placed successfully!');
