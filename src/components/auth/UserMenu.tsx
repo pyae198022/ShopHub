@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, LogOut, Heart } from 'lucide-react';
+import { User, LogOut, Heart, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,10 +10,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsAdmin } from '@/hooks/useAdminOrders';
 import { AuthModal } from './AuthModal';
 
 export function UserMenu() {
   const { user, isLoading, signOut } = useAuth();
+  const { data: isAdmin } = useIsAdmin();
   const [authOpen, setAuthOpen] = useState(false);
 
   if (isLoading) {
@@ -64,6 +66,17 @@ export function UserMenu() {
             My Wishlist
           </Link>
         </DropdownMenuItem>
+        {isAdmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link to="/admin">
+                <Shield className="mr-2 h-4 w-4" />
+                Admin Panel
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut()}>
           <LogOut className="mr-2 h-4 w-4" />
