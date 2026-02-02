@@ -6,11 +6,11 @@ import { CartSheet } from './CartSheet';
 import { UserMenu } from '@/components/auth/UserMenu';
 
 interface ShopHeaderProps {
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
 }
 
-export function ShopHeader({ searchQuery, onSearchChange }: ShopHeaderProps) {
+export function ShopHeader({ searchQuery = '', onSearchChange }: ShopHeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
@@ -20,7 +20,31 @@ export function ShopHeader({ searchQuery, onSearchChange }: ShopHeaderProps) {
             <span>ShopHub</span>
           </Link>
 
-          <div className="flex-1 max-w-md hidden md:block">
+          {onSearchChange && (
+            <div className="flex-1 max-w-md hidden md:block">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2">
+          
+            <UserMenu />
+            <CartSheet />
+          </div>
+        </div>
+
+        {/* Mobile search */}
+        {onSearchChange && (
+          <div className="pb-4 md:hidden">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -32,27 +56,7 @@ export function ShopHeader({ searchQuery, onSearchChange }: ShopHeaderProps) {
               />
             </div>
           </div>
-
-          <div className="flex items-center gap-2">
-          
-            <UserMenu />
-            <CartSheet />
-          </div>
-        </div>
-
-        {/* Mobile search */}
-        <div className="pb-4 md:hidden">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search products..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
+        )}
       </div>
     </header>
   );
