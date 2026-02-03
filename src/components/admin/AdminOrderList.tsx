@@ -3,7 +3,53 @@ import { useAdminOrders, Order } from '@/hooks/useAdminOrders';
 import { AdminOrderCard } from './AdminOrderCard';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Package, Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, Package, Search, Download } from 'lucide-react';
+import { format } from 'date-fns';
+
+function exportOrdersToCSV(orders: Order[]) {
+  const headers = [
+    'Order ID',
+    'Status',
+    'Customer Name',
+    'Email',
+    'Total',
+    'Subtotal',
+    'Tax',
+    'Tracking Number',
+    'Carrier',
+    'Created At',
+    'Shipped At',
+    'Delivered At',
+  ];
+
+  const rows = orders.map((order) => [
+    order.id,
+    order.status,
+    order.shippingAddress ? `${order.shippingAddress.firstName} ${order.shippingAddress.lastName}` : '',
+    order.userEmail || '',
+    order.total.toFixed(2),
+    order.subtotal.toFixed(2),
+    order.tax.toFixed(2),
+    order.trackingNumber || '',
+    order.carrier || '',
+    format(new Date(order.createdAt), 'yyyy-MM-dd HH:mm:ss'),
+    order.shippedAt ? format(new Date(order.shippedAt), 'yyyy-MM-dd HH:mm:ss') : '',
+    order.deliveredAt ? format(new Date(order.deliveredAt), 'yyyy-MM-dd HH:mm:ss') : '',
+  ]);
+
+  const csvContent = [
+    headers.join(','),
+    ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')),
+  ].join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `orders-export-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
 
 export function AdminOrderList() {
   const { data: orders, isLoading, error } = useAdminOrders();
@@ -64,6 +110,14 @@ export function AdminOrderList() {
             <SelectItem value="delivered">Delivered</SelectItem>
           </SelectContent>
         </Select>
+        <Button
+          variant="outline"
+          onClick={() => filteredOrders && exportOrdersToCSV(filteredOrders)}
+          disabled={!filteredOrders || filteredOrders.length === 0}
+        >
+          <Download className="h-4 w-4 mr-2" />
+          Export CSV
+        </Button>
       </div>
 
       {/* Stats */}
