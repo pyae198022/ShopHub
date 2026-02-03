@@ -4,7 +4,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useIsAdmin } from '@/hooks/useAdminOrders';
 import { ShopHeader } from '@/components/ecommerce/ShopHeader';
 import { AdminOrderList } from '@/components/admin/AdminOrderList';
-import { Shield, Loader2 } from 'lucide-react';
+import { AdminProductList } from '@/components/admin/AdminProductList';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Shield, Loader2, Package, ShoppingCart } from 'lucide-react';
 
 export default function Admin() {
   const { user, isLoading: authLoading } = useAuth();
@@ -52,7 +54,26 @@ export default function Admin() {
           <h1 className="text-3xl font-bold text-foreground">Admin Panel</h1>
         </div>
         
-        <AdminOrderList />
+        <Tabs defaultValue="orders" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="orders" className="flex items-center gap-2">
+              <ShoppingCart className="h-4 w-4" />
+              Orders
+            </TabsTrigger>
+            <TabsTrigger value="products" className="flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              Products
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="orders">
+            <AdminOrderList />
+          </TabsContent>
+          
+          <TabsContent value="products">
+            <AdminProductList />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
