@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAdminProducts, useDeleteProduct, Product } from '@/hooks/useAdminProducts';
 import { AddProductDialog } from './AddProductDialog';
+import { EditProductDialog } from './EditProductDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,12 +17,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Loader2, Package, Search, Trash2 } from 'lucide-react';
+import { Loader2, Package, Pencil, Search, Trash2 } from 'lucide-react';
 
 export function AdminProductList() {
   const { data: products, isLoading, error } = useAdminProducts();
   const deleteProduct = useDeleteProduct();
   const [searchQuery, setSearchQuery] = useState('');
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const filteredProducts = products?.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -79,22 +81,32 @@ export function AdminProductList() {
             <ProductCard
               key={product.id}
               product={product}
+              onEdit={() => setEditingProduct(product)}
               onDelete={() => deleteProduct.mutate(product.id)}
               isDeleting={deleteProduct.isPending}
             />
           ))}
         </div>
       )}
+
+      {/* Edit Product Dialog */}
+      <EditProductDialog
+        product={editingProduct}
+        open={!!editingProduct}
+        onOpenChange={(open) => !open && setEditingProduct(null)}
+      />
     </div>
   );
 }
 
 function ProductCard({
   product,
+  onEdit,
   onDelete,
   isDeleting,
 }: {
   product: Product;
+  onEdit: () => void;
   onDelete: () => void;
   isDeleting: boolean;
 }) {
@@ -124,7 +136,11 @@ function ProductCard({
             </div>
           </div>
         </div>
-        <div className="mt-4 flex justify-end">
+        <div className="mt-4 flex justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={onEdit}>
+            <Pencil className="h-4 w-4 mr-1" />
+            Edit
+          </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" size="sm" disabled={isDeleting}>
