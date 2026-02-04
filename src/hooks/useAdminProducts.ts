@@ -104,6 +104,48 @@ export function useCreateProduct() {
   });
 }
 
+export function useUpdateProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<CreateProductData> }) => {
+      const { data: product, error } = await supabase
+        .from('products')
+        .update({
+          name: data.name,
+          description: data.description,
+          price: data.price,
+          original_price: data.originalPrice ?? null,
+          image: data.image,
+          category: data.category,
+          stock: data.stock,
+          tags: data.tags || [],
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return product;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast({
+        title: 'Product Updated',
+        description: 'The product has been updated successfully.',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Failed to Update Product',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+}
+
 export function useDeleteProduct() {
   const queryClient = useQueryClient();
 
