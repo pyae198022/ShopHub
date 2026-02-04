@@ -176,3 +176,65 @@ export function useDeleteProduct() {
     },
   });
 }
+
+export function useBulkDeleteProducts() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (productIds: string[]) => {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .in('id', productIds);
+
+      if (error) throw error;
+      return productIds;
+    },
+    onSuccess: (productIds) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast({
+        title: 'Products Deleted',
+        description: `${productIds.length} product(s) have been removed successfully.`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Failed to Delete Products',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+}
+
+export function useBulkUpdateStock() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ productIds, stock }: { productIds: string[]; stock: number }) => {
+      const { error } = await supabase
+        .from('products')
+        .update({ stock })
+        .in('id', productIds);
+
+      if (error) throw error;
+      return { productIds, stock };
+    },
+    onSuccess: ({ productIds, stock }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast({
+        title: 'Stock Updated',
+        description: `Stock set to ${stock} for ${productIds.length} product(s).`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Failed to Update Stock',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+}
