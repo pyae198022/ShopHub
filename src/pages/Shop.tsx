@@ -6,7 +6,6 @@ import { CategoryFilter } from '@/components/ecommerce/CategoryFilter';
 import { ProductCard } from '@/components/ecommerce/ProductCard';
 import { ProductListItem } from '@/components/ecommerce/ProductListItem';
 import { AIRecommendations } from '@/components/ecommerce/AIRecommendations';
-import { categories } from '@/data/sampleProducts';
 import { supabase } from '@/integrations/supabase/client';
 import type { Product } from '@/types/ecommerce';
 import { Button } from '@/components/ui/button';
@@ -69,6 +68,12 @@ export default function Shop() {
       }));
     },
   });
+
+  // Extract unique categories from products
+  const categories = useMemo(() => {
+    const uniqueCategories = [...new Set(products.map((p) => p.category))].sort();
+    return ['All', ...uniqueCategories];
+  }, [products]);
 
   useEffect(() => {
     localStorage.setItem(VIEW_MODE_KEY, viewMode);
