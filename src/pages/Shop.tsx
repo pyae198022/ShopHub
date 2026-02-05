@@ -1,11 +1,14 @@
 import { useState, useMemo, useEffect } from 'react';
-import { LayoutGrid, List } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { LayoutGrid, List, Loader2 } from 'lucide-react';
 import { ShopHeader } from '@/components/ecommerce/ShopHeader';
 import { CategoryFilter } from '@/components/ecommerce/CategoryFilter';
 import { ProductCard } from '@/components/ecommerce/ProductCard';
 import { ProductListItem } from '@/components/ecommerce/ProductListItem';
 import { AIRecommendations } from '@/components/ecommerce/AIRecommendations';
-import { sampleProducts, categories } from '@/data/sampleProducts';
+import { categories } from '@/data/sampleProducts';
+import { supabase } from '@/integrations/supabase/client';
+import type { Product } from '@/types/ecommerce';
 import { Button } from '@/components/ui/button';
 import {
   Pagination,
@@ -40,12 +43,39 @@ export default function Shop() {
   const [productsPerPage, setProductsPerPage] = useState(8);
   const [viewMode, setViewMode] = useState<ViewMode>(getStoredViewMode);
 
+  // Fetch products from database
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      return data.map((p): Product => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        price: Number(p.price),
+        originalPrice: p.original_price ? Number(p.original_price) : undefined,
+        image: p.image,
+        category: p.category,
+        stock: p.stock,
+        rating: p.rating ? Number(p.rating) : undefined,
+        reviewCount: p.review_count ?? undefined,
+        tags: p.tags ?? undefined,
+      }));
+    },
+  });
+
   useEffect(() => {
     localStorage.setItem(VIEW_MODE_KEY, viewMode);
   }, [viewMode]);
 
   const filteredProducts = useMemo(() => {
-    return sampleProducts.filter((product) => {
+    return products.filter((product) => {
       const matchesCategory =
         activeCategory === 'All' || product.category === activeCategory;
       const matchesSearch =
@@ -54,7 +84,7 @@ export default function Shop() {
         product.description.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery, products]);
 
   // Reset to page 1 when filters change
   useMemo(() => {
@@ -115,7 +145,11 @@ export default function Shop() {
           onCategoryChange={setActiveCategory}
         />
 
-        {filteredProducts.length === 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
               No products found. Try adjusting your search or filters.
