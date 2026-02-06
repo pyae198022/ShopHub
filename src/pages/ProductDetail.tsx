@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Star, Minus, Plus, ShoppingCart, Truck, Shield, RotateCcw, Loader2 } from 'lucide-react';
+import { ProductCard } from '@/components/ecommerce/ProductCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -46,6 +47,36 @@ export default function ProductDetail() {
       } as Product;
     },
     enabled: !!id,
+  });
+
+  // Fetch related products from the same category
+  const { data: relatedProducts = [] } = useQuery({
+    queryKey: ['related-products', product?.category, id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('category', product!.category)
+        .neq('id', id!)
+        .limit(4);
+
+      if (error) throw error;
+
+      return data.map((p): Product => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        price: Number(p.price),
+        originalPrice: p.original_price ? Number(p.original_price) : undefined,
+        image: p.image,
+        category: p.category,
+        stock: p.stock,
+        rating: p.rating ? Number(p.rating) : undefined,
+        reviewCount: p.review_count ?? undefined,
+        tags: p.tags ?? undefined,
+      }));
+    },
+    enabled: !!product?.category && !!id,
   });
 
   useEffect(() => {
@@ -243,6 +274,19 @@ export default function ProductDetail() {
           <Separator className="mb-8" />
           <ProductReviews productId={product.id} />
         </div>
+
+        {/* Related Products */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-12">
+            <Separator className="mb-8" />
+            <h2 className="text-2xl font-bold mb-6">Related Products</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {relatedProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
