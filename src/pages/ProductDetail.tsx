@@ -1,15 +1,17 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Star, Minus, Plus, ShoppingCart, Truck, Shield, RotateCcw } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, Star, Minus, Plus, ShoppingCart, Truck, Shield, RotateCcw, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { sampleProducts } from '@/data/sampleProducts';
+import { supabase } from '@/integrations/supabase/client';
 import { useCart } from '@/contexts/CartContext';
 import { useState, useEffect } from 'react';
 import { CartSheet } from '@/components/ecommerce/CartSheet';
 import { ProductReviews } from '@/components/ecommerce/ProductReviews';
 import { WishlistButton } from '@/components/ecommerce/WishlistButton';
 import { useBrowsingHistory } from '@/hooks/useBrowsingHistory';
+import type { Product } from '@/types/ecommerce';
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
@@ -17,14 +19,48 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const { trackProductView } = useBrowsingHistory();
 
-  const product = sampleProducts.find((p) => p.id === id);
-  
-  // Track product view when the page loads
+  const { data: product, isLoading } = useQuery({
+    queryKey: ['product', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', id!)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) return null;
+
+      return {
+        id: data.id,
+        name: data.name,
+        description: data.description,
+        price: Number(data.price),
+        originalPrice: data.original_price ? Number(data.original_price) : undefined,
+        image: data.image,
+        category: data.category,
+        stock: data.stock,
+        rating: data.rating ? Number(data.rating) : undefined,
+        reviewCount: data.review_count ?? undefined,
+        tags: data.tags ?? undefined,
+      } as Product;
+    },
+    enabled: !!id,
+  });
+
   useEffect(() => {
     if (id) {
       trackProductView(id);
     }
   }, [id, trackProductView]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!product) {
     return (
