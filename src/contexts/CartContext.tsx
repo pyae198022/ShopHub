@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import type { Product, CartItem, Cart } from '@/types/ecommerce';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { AuthModal } from '@/components/auth/AuthModal';
 
 interface CartContextType {
   cart: Cart;
@@ -11,6 +12,8 @@ interface CartContextType {
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
   itemCount: number;
+  showAuthModal: boolean;
+  setShowAuthModal: (show: boolean) => void;
 }
 
 const defaultCart: Cart = {
@@ -42,6 +45,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return saved ? JSON.parse(saved) : [];
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const cart = calculateCart(items);
 
@@ -52,12 +56,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addToCart = useCallback(async (product: Product, quantity = 1) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      toast.error('Please sign in to add items to your cart', {
-        action: {
-          label: 'Sign In',
-          onClick: () => window.location.href = '/shop',
-        },
-      });
+      setShowAuthModal(true);
       return;
     }
 
@@ -115,9 +114,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         updateQuantity,
         clearCart,
         itemCount,
+        showAuthModal,
+        setShowAuthModal,
       }}
     >
       {children}
+      <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
     </CartContext.Provider>
   );
 }
